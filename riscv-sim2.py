@@ -68,7 +68,7 @@ def read_register(register_number):
 
 def write_register(register_number, value):
     if register_number != 0:  # (x0 = 0 always)
-        register_list[register_number] = value
+        register_list[register_number] = int(value)
 
 
 """
@@ -87,6 +87,7 @@ access memory
 
 # read 4 byte integer from data memory
 def read_memory(address):
+    address -= 0x10000000
     binary_str = ""
     for i in range(4):
         binary_str += data_memory_list[address + (3 - i)]
@@ -96,6 +97,7 @@ def read_memory(address):
 
 # write 4 byte integer to data memory
 def write_memory(address, decimal_value):
+    address -= 0x10000000
     binary_str = format(decimal_value, "032b")
     for i in range(4):
         data_memory_list[address + (3 - i)] = binary_str[8 * i : 8 * (i + 1)]
@@ -107,146 +109,206 @@ each instruction
 
 
 def add_instruction(rd, rs1, rs2):
-    write_register(rd, read_register(int(rs1, 2)) + read_register(int(rs2, 2)))
+    global program_counter
+    write_register(int(rd, 2), read_register(int(rs1, 2)) + read_register(int(rs2, 2)))
+    program_counter += 1
 
 
 def sub_instruction(rd, rs1, rs2):
-    write_register(rd, read_register(int(rs1, 2)) - read_register(int(rs2, 2)))
+    global program_counter
+    write_register(int(rd, 2), read_register(int(rs1, 2)) - read_register(int(rs2, 2)))
+    program_counter += 1
 
 
 def sll_instruction(rd, rs1, rs2):
+    global program_counter
     write_register(
-        rd, read_register(int(rs1, 2)) << read_register(int(rs2, 2) & 0b11111)
-    )  # only for rs2's lower 5 bits
+        int(rd, 2), read_register(int(rs1, 2)) << (read_register(int(rs2, 2)) & 0b11111)
+    )
+    program_counter += 1
 
 
 def slt_instruction(rd, rs1, rs2):
-    if read_register(int(rs1, 2)) < read_register(int(rs2, 2)):
-        write_register(rd, 1)
+    global program_counter
+    if (read_register(int(rs1, 2)) < read_register(int(rs2, 2))):
+        write_register(int(rd, 2), 1)
     else:
-        write_register(rd, 0)
+        write_register(int(rd, 2), 0)
+    program_counter += 1
 
 
 def xor_instruction(rd, rs1, rs2):
-    write_register(rd, read_register(int(rs1, 2)) ^ read_register(int(rs2, 2)))
+    global program_counter
+    write_register(int(rd, 2), read_register(int(rs1, 2)) ^ read_register(int(rs2, 2)))
+    program_counter += 1
 
 
 def srl_instruction(rd, rs1, rs2):
-    pass
+    global program_counter
+    if (read_register(int(rd, 2)) <= 0):
+        write_register(
+            int(rd, 2),
+            (read_register(int(rs1, 2)) & 0xffffffff) >> (read_register(int(rs2, 2))
+            & 0b11111)
+        )
+    else:
+        write_register(
+            int(rd, 2),
+            read_register(int(rs1, 2))>> (read_register(int(rs2, 2))
+            & 0b11111)
+        )
+    program_counter += 1
 
 
 def sra_instruction(rd, rs1, rs2):
+    global program_counter
     write_register(
-        rd, read_register(int(rs1, 2)) >> read_register(int(rs2, 2) & 0b11111)
-    )  # only for rs2's lower 5 bits
+        int(rd, 2), read_register(int(rs1, 2)) >> (read_register(int(rs2, 2)) & 0b11111)
+    ) 
+    program_counter += 1
 
 
 def or_instruction(rd, rs1, rs2):
-    write_register(rd, read_register(int(rs1, 2)) | read_register(int(rs2, 2)))
+    global program_counter
+    write_register(int(rd, 2), read_register(int(rs1, 2)) | read_register(int(rs2, 2)))
+    program_counter += 1
 
 
 def and_instruction(rd, rs1, rs2):
-    write_register(rd, read_register(int(rs1, 2)) & read_register(int(rs2, 2)))
+    global program_counter
+    write_register(int(rd, 2), read_register(int(rs1, 2)) & read_register(int(rs2, 2)))
+    program_counter += 1
 
 
 def addi_instruction(rd, rs1, imm):
-    write_register(rd, read_register(int(rs1, 2)) + binary_to_int(imm))
+    global program_counter
+    write_register(int(rd, 2), read_register(int(rs1, 2)) + binary_to_int(imm))
+    program_counter += 1
 
 
 def slti_instruction(rd, rs1, imm):
+    global program_counter
     if read_register(int(rs1, 2)) < binary_to_int(imm):
-        write_register(rd, 1)
+        write_register(int(rd, 2), 1)
     else:
-        write_register(rd, 0)
+        write_register(int(rd, 2), 0)
+    program_counter += 1
 
 
 def xori_instruction(rd, rs1, imm):
-    write_register(rd, read_register(int(rs1, 2)) ^ binary_to_int(imm))
+    global program_counter
+    write_register(int(rd, 2), read_register(int(rs1, 2)) ^ binary_to_int(imm))
+    program_counter += 1
 
 
 def ori_instruction(rd, rs1, imm):
-    write_register(rd, read_register(int(rs1, 2)) | binary_to_int(imm))
+    global program_counter
+    write_register(int(rd, 2), read_register(int(rs1, 2)) | binary_to_int(imm))
+    program_counter += 1
 
 
 def andi_instruction(rd, rs1, imm):
-    write_register(rd, read_register(int(rs1, 2)) & binary_to_int(imm))
+    global program_counter
+    write_register(int(rd, 2), read_register(int(rs1, 2)) & binary_to_int(imm))
+    program_counter += 1
 
 
 def slli_instruction(rd, rs1, imm):
-    write_register(rd, read_register(int(rs1, 2)) << int(imm, 2))
+    global program_counter
+    write_register(
+        int(rd, 2), read_register(int(rs1, 2)) << (binary_to_int(imm) & 0b11111)
+    )
+    program_counter += 1
 
 
 def srli_instruction(rd, rs1, imm):
-    write_register(rd, read_register(int(rs1, 2)) >> int(imm, 2))
+    global program_counter
+    write_register(
+        int(rd, 2),
+        (read_register(int(rs1, 2)) & 0xffffffff) >> (binary_to_int(imm) & 0b11111)
+    )
+    program_counter += 1
 
 
 def srai_instruction(rd, rs1, imm):
-    write_register(rd, read_register(int(rs1, 2)) >> int(imm, 2))
+    global program_counter
+    write_register(
+        int(rd, 2), read_register(int(rs1, 2)) >> (binary_to_int(imm) & 0b11111)
+    )
+    program_counter += 1
 
 
 def lw_instruction(rd, rs1, imm):
-    write_register(rd, read_memory(get_address(int(rs1, 2), binary_to_int(imm))))
+    global program_counter
+    write_register(int(rd,2), read_memory(get_address(int(rs1, 2), binary_to_int(imm))))
+    program_counter += 1
     # TODO : x20000000 case
 
 
 def sw_instruction(rs1, rs2, imm):
+    global program_counter
     write_memory(
         get_address(int(rs1, 2), binary_to_int(imm)), read_register(int(rs2, 2))
     )
+    program_counter += 1
     # TODO : x20000000 case
 
 
 def beq_instruction(rs1, rs2, imm):
-    if read_register(int(rs1, 2)) == read_register(int(rs2, 2)):
-        program_counter += binary_to_int(imm)
-        return
+    global program_counter
+    if (read_register(int(rs1, 2)) == read_register(int(rs2, 2))):
+        program_counter += int(binary_to_int(imm)/4)
     else:
-        pass
+        program_counter += 1
 
 
 def bne_instruction(rs1, rs2, imm):
-    if read_register(int(rs1, 2)) != read_register(int(rs2, 2)):
-        program_counter += binary_to_int(imm)
-        return
+    global program_counter
+    if (read_register(int(rs1, 2)) != read_register(int(rs2, 2))):
+        program_counter += int(binary_to_int(imm)/4)
     else:
-        pass
+        program_counter += 1
 
 
 def blt_instruction(rs1, rs2, imm):
-    if read_register(int(rs1, 2)) < read_register(int(rs2, 2)):
-        program_counter += binary_to_int(imm)
-        return
+    global program_counter
+    if (read_register(int(rs1, 2)) < read_register(int(rs2, 2))):
+        program_counter += int(binary_to_int(imm)/4)
     else:
-        pass
+        program_counter += 1
 
 
 def bge_instruction(rs1, rs2, imm):
-    if read_register(int(rs1, 2)) >= read_register(int(rs2, 2)):
-        program_counter += binary_to_int(imm)
-        return
+    global program_counter
+    if (read_register(int(rs1, 2)) >= read_register(int(rs2, 2))):
+        program_counter += int(binary_to_int(imm)/4)
     else:
-        pass
+        program_counter += 1
 
 
 def lui_instruction(rd, imm):
-    write_register(rd, binary_to_int(imm) << 3)
+    global program_counter
+    write_register(int(rd, 2), binary_to_int(imm))
+    program_counter += 1
 
 
 def auipc_instruction(rd, imm):
-    write_register(rd, (program_counter * 4) + (binary_to_int(imm) << 3))
+    global program_counter
+    write_register(int(rd, 2), (program_counter * 4) + (binary_to_int(imm)))
+    program_counter += 1
 
 
 def jal_instruction(rd, imm):
-    write_register(rd, program_counter + 1)
-    program_counter += binary_to_int(imm) / 4
-    return
+    global program_counter
+    write_register(int(rd, 2), program_counter*4+4)
+    program_counter += int(binary_to_int(imm) / 4)
 
 
 def jalr_instruction(rd, rs1, imm):
-    write_register(rd, program_counter + 1)
-    program_counter = (read_register(int(rs1, 2)) + binary_to_int(imm)) / 4
-    return
-    # TODO : need to check if it is correct
+    global program_counter
+    write_register(int(rd, 2), program_counter*4+4)
+    program_counter = int((read_register(int(rs1, 2)) + binary_to_int(imm)) / 4)
+    # TODO : need to check if it is correct 
 
 
 """
@@ -309,7 +371,7 @@ def execute_binary_instruction(binary_str):
             elif funct3 == "111":
                 andi_instruction(rd, rs1, imm)
             elif funct3 == "001" and imm[0:7] == "0000000":
-                slli_instruction(rd, rs1, imm) 
+                slli_instruction(rd, rs1, imm)
             elif funct3 == "101" and imm[0:7] == "0000000":
                 srli_instruction(rd, rs1, imm)
             elif funct3 == "101" and imm[0:7] == "0100000":
@@ -351,12 +413,12 @@ def execute_binary_instruction(binary_str):
     # U-Type Instructions
     elif opcode in {"0110111", "0010111"}:
         rd = binary_str[20:25]
-        imm = binary_str[0:20]
+        imm = binary_str[0:20] + "000000000000"
 
         if opcode == "0110111":
-            return f"lui x{int(rd, 2)}, {binary_to_int(imm)}"
+            lui_instruction(rd, imm)
         elif opcode == "0010111":
-            return f"auipc x{int(rd, 2)}, {binary_to_int(imm)}"
+            auipc_instruction(rd, imm)
 
     # UJ-type Instructions
     elif opcode == "1101111":
@@ -365,8 +427,6 @@ def execute_binary_instruction(binary_str):
             binary_str[0] + binary_str[12:20] + binary_str[11] + binary_str[1:11] + "0"
         )
         jal_instruction(rd, imm)
-
-    program_counter += 1
 
 
 """
@@ -388,7 +448,7 @@ print register values
 
 def print_register(register_list):
     for i in range(32):
-        print(f"x{i}: {int_to_hex(register_list[i])}")
+        print(f"x{i}: 0x{int_to_hex(register_list[i])}")
 
 
 """
@@ -418,6 +478,8 @@ elif len(sys.argv) == 4:
     data_memory_list[0 : len(binary_data_list)] = binary_data_list
 
 for i in range(instruction_number):
-    execute_binary_instruction(instruction_list[i])
+    if program_counter >= len(instruction_list):
+        break
+    execute_binary_instruction(instruction_list[int(program_counter)])
 
 print_register(register_list)

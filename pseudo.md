@@ -15,3 +15,11 @@
     - memory & register access 할 때 global var 사용
     - instuction list는 function을 통해 얻기
     - data list는 먼저 initialize 필요
+
+
+~swe3005/2023f/proj2/riscv-sim ~swe3005/2023f/proj2/proj2_8_inst.bin ~swe3005/2023f/proj2/proj2_8_data.bin 2001 > r.txt
+python3 t.py ~swe3005/2023f/proj2/proj2_8_inst.bin ~swe3005/2023f/proj2/proj2_8_data.bin 2001 > m.txt
+python3 t.py ~swe3005/2023f/proj2/proj2_8_inst.bin ~swe3005/2023f/proj2/proj2_8_data.bin 2001
+~swe3005/2023f/proj2/riscv-sim ~swe3005/2023f/proj2/proj2_8_inst.bin ~swe3005/2023f/proj2/proj2_8_data.bin 2001
+diff r.txt m.txt
+```
