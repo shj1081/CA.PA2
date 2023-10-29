@@ -125,21 +125,18 @@ def execute_binary_instruction(binary_str):
             write_register(rd, read_register(rs1) ^ read_register(rs2))
             program_counter += 1
         elif funct3 == "101" and funct7 == "0000000":  # srl
-            if read_register(rd) <= 0:
-                write_register(
-                    rd,
-                    (read_register(rs1) & 0xFFFFFFFF) >> (read_register(rs2) & 0b11111),
-                )
+            if (read_register(rs2) == 0):
+                    write_register(rd, read_register(rs1))
             else:
                 write_register(
                     rd,
-                    read_register(rs1) >> (read_register(rs2) & 0b11111),
+                    (read_register(rs1) & 0xFFFFFFFF) >> (read_register(rs2) & 0b11111)
                 )
             program_counter += 1
         elif funct3 == "101" and funct7 == "0100000":  # sra
             write_register(
                 rd,
-                read_register(rs1) >> (read_register(rs2) & 0b11111),
+                read_register(rs1) >> (read_register(rs2) & 0b11111)
             )
             program_counter += 1
         elif funct3 == "110" and funct7 == "0000000":  # or
@@ -179,14 +176,17 @@ def execute_binary_instruction(binary_str):
             elif funct3 == "001" and imm[0:7] == "0000000":  # slli
                 write_register(
                     rd,
-                    read_register(rs1) << (binary_to_int(imm) & 0b11111),
+                    read_register(rs1) << (binary_to_int(imm) & 0b11111)
                 )
                 program_counter += 1
             elif funct3 == "101" and imm[0:7] == "0000000":  # srli
-                write_register(
-                    rd,
-                    (read_register(rs1) & 0xFFFFFFFF) >> (binary_to_int(imm) & 0b11111),
-                )
+                if (binary_to_int(imm) == 0):
+                    write_register(rd, read_register(rs1))
+                else:
+                    write_register(
+                        rd,
+                        (read_register(rs1) & 0xFFFFFFFF) >> (binary_to_int(imm) & 0b11111),
+                    )
                 program_counter += 1
             elif funct3 == "101" and imm[0:7] == "0100000":  # srai
                 write_register(
@@ -320,4 +320,4 @@ for i in range(instruction_number):
 
 # print register values in hexadecimal
 for i in range(32):
-    print(f"x{i}: 0x{int_to_hex(register_list[i])}")
+    print("x" + str(i) + ": 0x" + format((register_list[i] & ((1 << 32)-1)), "08x"))

@@ -23,3 +23,10 @@ python3 t.py ~swe3005/2023f/proj2/proj2_8_inst.bin ~swe3005/2023f/proj2/proj2_8_
 ~swe3005/2023f/proj2/riscv-sim ~swe3005/2023f/proj2/proj2_8_inst.bin ~swe3005/2023f/proj2/proj2_8_data.bin 2001
 diff r.txt m.txt
 ```
+
+
+./riscv-sim ~swe3005/2023f/proj2/proj2_8_inst.bin ~swe3005/2023f/proj2/proj2_8_data.bin 2001  > m.txt
+
+~swe3005/2023f/proj2/riscv-sim ~swe3005/2023f/proj2/proj2_8_inst.bin ~swe3005/2023f/proj2/proj2_8_data.bin 2001 > r.txt
+
+diff m.txt r.txt 
